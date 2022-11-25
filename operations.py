@@ -9,7 +9,7 @@ numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '0', '1', '2', '3', '4', '5', '6', '7',
 def checkValidForMiddleOperator(MiddleOperator, operator_index, formula):
     if (operator_index - 1 < 0 or operator_index + 1 == len(formula) or formula[operator_index - 1] not in numbers or
         formula[operator_index + 1] not in numbers) and formula[operator_index - 1] != '!':
-        raise ValueError("operator '" + MiddleOperator + "' is not valid in current place")
+        raise ValueError("operator '" + MiddleOperator + "' is not valid in current index: "+str(operator_index)+", formula: "+formula)
 
 
 class Operator(object):
