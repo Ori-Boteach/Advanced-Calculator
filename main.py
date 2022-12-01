@@ -9,7 +9,7 @@ def InitialCheck(given_formula):
     :return: if general check invalid, raises custom exception with the relevant message else returns the new formula
     """
     chars_valid = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', ' ', '.', '+', '-', '*', '/', '!', '^',
-                   '.', '%', '$', '&', '@', '~']
+                   '.', '%', '$', '&', '@', '~', '#']
     # in case number of parentheses doesn't add up
     if given_formula.count('(') != given_formula.count(')'):
         raise OddParentheses
@@ -24,24 +24,32 @@ def InitialCheck(given_formula):
         if check_character not in chars_valid:
             raise ValueError("char '" + check_character + "' is invalid!")
 
-    # check spaces: if valid - delete them, else - raise exception
     index = 0
-    for check_character in given_formula:
+    for check_character in given_formula:  # check for invalid '.' placement
+        if check_character == '.' and given_formula[index + 1] not in valid_near_dot:
+            raise ValueError("chars '.' in index " + str(index) + " and after it are invalid!")
+        index += 1
+
+    index = 0
+    for check_character in given_formula:  # add '0' before '.' that doesn't have a number in front of it
+        if check_character == '.' and (given_formula[index - 1] not in valid_near_dot or index - 1 < 0):
+            given_formula = given_formula[:index] + '0.' + given_formula[index + 1:]
+        index += 1
+
+    index = 0
+    for check_character in given_formula:  # check spaces: if valid - delete them, else - raise exception
         if check_character == ' ':
-            operator_index = given_formula.rfind(check_character)
-            if operator_index - 1 < 0 or operator_index + 1 == len(formula) or (
-                    formula[operator_index - 1] in numbers and formula[operator_index + 1] in numbers):  # invalid
+            if index - 1 < 0 or index + 1 == len(formula) or (
+                    formula[index - 1] in valid_digits and formula[index + 1] in valid_digits):  # invalid
                 raise InvalidSpaces
             else:  # valid -> remove space and dec index as a result
                 given_formula = given_formula[:index] + given_formula[index + 1:]
                 index -= 1
         index += 1
 
-    operator_index = 0
+    operator_index = 0  # TODO: doesnt work for ~3
     for check_character in given_formula:  # converting ~ signs to - signs
-        if check_character == '~' and given_formula[operator_index - 1] not in numbers:
-            given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 1:]
-        elif check_character == '~' and operator_index - 1 < 0:  # TODO: doesnt work for ~3
+        if check_character == '~' and (given_formula[operator_index - 1] not in valid_digits or operator_index - 1 < 0):
             given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 1:]
         else:
             ValueError("operator '~' is not valid in current place")  # in a case like 3+~4 -> invalid
@@ -73,10 +81,10 @@ def Calculate(formula):
     :return: the result of the given formula
     """
     operations_dict = {'+': Addition(), '-': Subtraction(), '*': Multiplication(), '/': Division(),
-                       '^': Pow().checkValid, '@': Average(), '~': Negation(), '%': DivisionRemainder(), '$': Maximum,
-                       '&': Minimum, '!': Factorial()}
+                       '^': Pow(), '@': Average(), '~': Negation(), '%': DivisionRemainder(), '$': Maximum(),
+                       '&': Minimum(), '!': Factorial(), '#': SumDigits()}
 
-    priority_dict = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3, '%': 4, '$': 5, '&': 5, '@': 5, '~': 6, '!': 6}
+    priority_dict = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3, '%': 4, '$': 5, '&': 5, '@': 5, '~': 6, '!': 6, '#': 6}
 
     current_priority = 6
     while current_priority > 0:  # scan the formula for each priority
@@ -85,28 +93,44 @@ def Calculate(formula):
             character = formula[index]
             if character in operators:  # if the char is an operator, else inc index
                 if priority_dict[character] == current_priority:  # if operator is the right priority
-                    # todo: doesn't work for & and $ and what to do with decimal numbers??? 2.1+2 ?
+                    print(formula)
                     operations_dict[character].checkValid(index, formula)  # check if the operator is valid
-                    if index + 1 < len(formula):  # if ok, calculate the result
+                    if index + 1 < len(formula) and index - 1 >= 0:  # if ok, calculate the result
                         # getting the WHOLE number BEFORE the operator
                         prior_number = formula[index - 1]
                         i = 1
-                        while formula[index - i - 1] in numbers and index - i - 1 >= 0:
+                        while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
                             prior_number = formula[index - i - 1] + prior_number
                             i += 1
-                        # getting the WHOLE number BEFORE the operator
+                        # getting the WHOLE number AFTER the operator
                         after_number = formula[index + 1]
                         i = 1
-                        while index + i + 1 < len(formula) and formula[index + i + 1] in numbers:
+                        while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
                             after_number += formula[index + i + 1]
                             i += 1
                         current_result = operations_dict[character].calculate(prior_number, after_number)
-                    else:
-                        current_result = operations_dict[character].calculate(formula[index - 1], 0)
+                    elif index + 1 >= len(formula):  # if the operator is at the end of the formula
+                        # getting the WHOLE number BEFORE the operator
+                        prior_number = formula[index - 1]
+                        i = 1
+                        while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
+                            prior_number = formula[index - i - 1] + prior_number
+                            i += 1
+                        after_number = ""
+                        current_result = operations_dict[character].calculate(prior_number, 0)
+                    else:  # if the operator is at the beginning of the formula
+                        prior_number = ""
+                        # getting the WHOLE number BEFORE the operator
+                        after_number = formula[index + 1]
+                        i = 1
+                        while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
+                            after_number += formula[index + i + 1]
+                            i += 1
+                        current_result = operations_dict[character].calculate(after_number, 0)
 
                     # update the formula:
                     # everything before the num prior to the operator + the result of the calc + everything after the num after the operator
-                    formula = formula[:index - len(prior_number)] + str(int(current_result)) + formula[index + len(after_number) + 1:]
+                    formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
                     print("new formula: " + formula)
                     index = -1  # reset index and start over from the beginning
 
@@ -128,7 +152,6 @@ def CalculateParentheses(formula):  # take care of the parentheses
             index -= 1  # if there was a change, index stays in place
         index += 1
 
-    print("after dealing with the parentheses the formula is: " + str(formula))
     return str(formula)
 
 
@@ -143,15 +166,26 @@ def ParenthesesValid(formula, parentheses_index):
         raise ValueError("parentheses are empty or contain only 1 char")
 
     can_be_before_parentheses = ['+', '-', '*', '/', '^', '%', '$', '&', '@']
-    if (parentheses_index - 1 > 0 and formula[parentheses_index -1] not in can_be_before_parentheses) or parentheses_index + 1 >= len(formula):
+    if (parentheses_index - 1 > 0 and formula[parentheses_index - 1] not in can_be_before_parentheses) or parentheses_index + 1 >= len(formula):
         raise ValueError("char before parentheses is not valid in current place")
 
 
 if __name__ == '__main__':
-    formula = input("Please enter a formula: ")
-    new_formula = InitialCheck(formula)
-    formula = new_formula
-    print("Your formula is: " + formula)
+    print("WELCOME TO YOUR ADVANCED CALCULATOR! made by Ori")
+    print("Addition: +, Subtraction: -, Multiplication: *, Division: /, Pow: ^, Division Remainder: %")
+    print("Maximum: $, Minimum: &, Average: @, Negation(prefix): ~, Factorial(postfix): !, Sum Digits(postfix): #")
+    wants_again = True
 
-    formula = CalculateParentheses(formula)  # take care of the parentheses calculations
-    print("The result: " + Calculate(formula))  # calculate the result of the formula and print it
+    while wants_again:
+        formula = input("Please enter a formula: ")
+        new_formula = InitialCheck(formula)
+        formula = new_formula
+        print("Your formula is: " + formula)
+
+        formula = CalculateParentheses(formula)  # take care of the parentheses calculations
+        print("The result: " + Calculate(formula))  # calculate the result of the formula and print it
+        pressed = input("Press 'q' to quit or any other key to continue: ")
+        if pressed == 'q':
+            wants_again = False
+
+    print("Thank you for using my calculator!")
