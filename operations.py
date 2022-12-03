@@ -1,21 +1,19 @@
 from math import *
 
-operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@', '~', '!', ' ', '#']
+operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@', '~', '!', '#']
 middle_operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@']
-# TODO: move - to here for negative numbers?
-valid_digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '.']
+valid_digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', '.', '-']
 valid_near_dot = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 
 def checkValidForMiddleOperator(MiddleOperator, operator_index, formula):
     if (operator_index - 1 < 0 or operator_index + 1 == len(formula) or formula[
-        operator_index - 1] not in valid_digits or
-        formula[operator_index + 1] not in valid_digits) and formula[operator_index - 1] != '!':
+        operator_index - 1] not in valid_digits or formula[operator_index + 1] not in valid_digits) and formula[operator_index - 1] != '!':
         raise ValueError("operator '" + MiddleOperator + "' is not valid in current index: " + str(
             operator_index) + ", formula: " + formula)
 
 
-class Operator(object):
+class Operator(object):  # the base class for all operators
     def calculate(self, num1, num2):
         pass
 
@@ -31,10 +29,6 @@ class Addition(Operator):  # +
         """
         :return: the value of the addition of the two given numbers
         """
-        print(num1)
-        print(num2)
-        print(float(num1))
-        print(float(num2))
         return float(num1) + float(num2)
 
     def checkValid(self, index, formula):
@@ -49,10 +43,15 @@ class Subtraction(Operator):  # -
         """
         :return: the value of the subtraction of the two given numbers
         """
-        return float(num1) - float(num2)
+        if num2 != 0:
+            return float(num1) - float(num2)
+        else:
+            return float(num1) * -1.0
 
     def checkValid(self, index, formula):
-        checkValidForMiddleOperator('-', index, formula)
+        if len(formula) == 1 or formula[index + 1] not in valid_digits:
+            raise ValueError("operator '-' is not valid in current index: " + str(
+                index) + ", formula: " + formula)
 
 
 class Multiplication(Operator):  # *
@@ -121,7 +120,10 @@ class Maximum(Operator):  # $
         """
         :return: the maximum value between the two given numbers
         """
-        return max(float(num1), float(num2))
+        if float(num1) > float(num2):
+            return float(num1)
+        else:
+            return float(num2)
 
     def checkValid(self, index, formula):
         checkValidForMiddleOperator('$', index, formula)
@@ -135,7 +137,10 @@ class Minimum(Operator):  # &
         """
         :return: the minimum value between the two given numbers
         """
-        return min(float(num1), float(num2))
+        if float(num1) < float(num2):
+            return float(num1)
+        else:
+            return float(num2)
 
     def checkValid(self, index, formula):
         checkValidForMiddleOperator('&', index, formula)
@@ -154,7 +159,7 @@ class Average(Operator):  # @
 
     def checkValid(self, index, formula):
         """
-        checking if '.' char in the given formula is valid
+        checking if '@' char in the given formula is valid
         :return: True if valid, False otherwise
         """
         checkValidForMiddleOperator('@', index, formula)
@@ -188,6 +193,8 @@ class Factorial(Operator):  # !
         calculating the factorial of the given number
         :return: the value of the given number factorial
         """
+        if float(num) < 0:
+            raise ValueError("can't calculate factorial of negative number")
         if float(num) == 1:
             return 1
         return float(num) * self.calculate(float(num) - 1, num_not_used)
@@ -211,7 +218,6 @@ class SumDigits(Operator):  # #
     def calculate(self, num, num_not_used):
         """
         calculating the sum of the digits of the given number
-        :param num: given number
         :return: the sum of the digits of the given number
         """
         num = int(num)

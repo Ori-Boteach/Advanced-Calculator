@@ -40,14 +40,14 @@ def InitialCheck(given_formula):
     for check_character in given_formula:  # check spaces: if valid - delete them, else - raise exception
         if check_character == ' ':
             if index - 1 < 0 or index + 1 == len(formula) or (
-                    formula[index - 1] in valid_digits and formula[index + 1] in valid_digits):  # invalid
+                    formula[index - 1] in valid_digits and formula[index + 1] in valid_digits) and formula[index - 1] != '-':  # invalid
                 raise InvalidSpaces
             else:  # valid -> remove space and dec index as a result
                 given_formula = given_formula[:index] + given_formula[index + 1:]
                 index -= 1
         index += 1
 
-    operator_index = 0  # TODO: doesnt work for ~3
+    operator_index = 0
     for check_character in given_formula:  # converting ~ signs to - signs
         if check_character == '~' and (given_formula[operator_index - 1] not in valid_digits or operator_index - 1 < 0):
             given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 1:]
@@ -64,7 +64,7 @@ def InitialCheck(given_formula):
             changed = True
         operator_index += 1
 
-    operator_index = 0  # TODO: what about 2+-3 ???
+    operator_index = 0
     for check_character in given_formula:  # only if there were multiple minus signs in a row concatenate the plus signs
         if changed and check_character == '+' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '+':
             given_formula = given_formula[:operator_index] + given_formula[operator_index + 1:]
@@ -90,22 +90,35 @@ def Calculate(formula):
     while current_priority > 0:  # scan the formula for each priority
         index = 0
         while index < len(formula):  # go over the formula
+
+            flag = False  # a flag to check if there are still operations to be done
+            for character in formula:  # go over the formula
+                if character in operators and character != '-':
+                    flag = True
+            if not flag and formula[0] == '-':  # if there are no more operations to be done, result is negative, break
+                break
+
             character = formula[index]
             if character in operators:  # if the char is an operator, else inc index
                 if priority_dict[character] == current_priority:  # if operator is the right priority
-                    print(formula)
                     operations_dict[character].checkValid(index, formula)  # check if the operator is valid
-                    if index + 1 < len(formula) and index - 1 >= 0:  # if ok, calculate the result
+                    if index + 1 < len(formula) and index - 1 >= 0:  # if operator is in the middle of the formula
                         # getting the WHOLE number BEFORE the operator
                         prior_number = formula[index - 1]
                         i = 1
                         while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                                i -= 1
+                                break
                             prior_number = formula[index - i - 1] + prior_number
                             i += 1
                         # getting the WHOLE number AFTER the operator
                         after_number = formula[index + 1]
                         i = 1
                         while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                                i -= 1
+                                break
                             after_number += formula[index + i + 1]
                             i += 1
                         current_result = operations_dict[character].calculate(prior_number, after_number)
@@ -114,6 +127,9 @@ def Calculate(formula):
                         prior_number = formula[index - 1]
                         i = 1
                         while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                                i -= 1
+                                break
                             prior_number = formula[index - i - 1] + prior_number
                             i += 1
                         after_number = ""
@@ -124,6 +140,9 @@ def Calculate(formula):
                         after_number = formula[index + 1]
                         i = 1
                         while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                                i -= 1
+                                break
                             after_number += formula[index + i + 1]
                             i += 1
                         current_result = operations_dict[character].calculate(after_number, 0)
@@ -132,7 +151,8 @@ def Calculate(formula):
                     # everything before the num prior to the operator + the result of the calc + everything after the num after the operator
                     formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
                     print("new formula: " + formula)
-                    index = -1  # reset index and start over from the beginning
+                    if character != '-':  # if the operator is not a minus sign
+                        index = -1  # reset index and start over from the beginning
 
             index += 1  # move to the next char
 
