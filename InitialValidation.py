@@ -1,4 +1,3 @@
-from Calculation import *  # import the calculation file
 from CustomExceptions import *  # import custom exceptions
 from operations import *  # import all the operations
 
@@ -6,15 +5,29 @@ from operations import *  # import all the operations
 def InitialCheck(given_formula):
     """
     checking if the given formula is valid and making necessary initial changes
-    :param given_formula:
+    :param given_formula: the initial formula that needs to be checked
     :return: if general check invalid, raises custom exception with the relevant message else returns the new formula
     """
     chars_valid = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', ' ', '.', '+', '-', '*', '/', '!', '^',
                    '.', '%', '$', '&', '@', '~', '#']
-    # in case number of parentheses doesn't add up
-    if given_formula.count('(') != given_formula.count(')'):
+
+    if given_formula.count('(') != given_formula.count(')'):  # in case number of parentheses doesn't add up
         raise OddParentheses
 
+    # if the first char is an operator, raise exception -> later on, if the first char is a plus sign, it will be removed
+    if given_formula[0] in operators and given_formula[0] != '-' and given_formula[0] != '~':
+        raise InvalidFirstChar(given_formula[0])
+
+    for check_character in given_formula:
+        if check_character == '\t':  # if there are tabs in the formula delete them
+            given_formula = given_formula.replace('\t', '')
+
+    for check_character in given_formula:
+        if check_character == ' ':  # if there are spaces in the formula allow it -> delete them
+            given_formula = given_formula.replace(' ', '')
+
+    if given_formula[-1] == '(' or given_formula[0] == ')':  # if there is a '(' at the end of the formula or a ')' at the beginning
+        raise EmptyParentheses
     for check_character in given_formula:
         # in case there is a ')' after a '('
         if check_character == '(' and given_formula[given_formula.rfind(check_character) + 1] == ')':
@@ -37,54 +50,41 @@ def InitialCheck(given_formula):
             given_formula = given_formula[:index] + '0.' + given_formula[index + 1:]
         index += 1
 
-    index = 0
-    for check_character in given_formula:  # check spaces: if valid - delete them, else - raise exception
-        if check_character == ' ':
-            if index - 1 < 0 or index + 1 == len(formula) or (
-                    formula[index - 1] in valid_digits and formula[index + 1] in valid_digits) and formula[index - 1] != '-':  # invalid
-                raise InvalidSpaces
-            else:  # valid -> remove space and dec index as a result
-                given_formula = given_formula[:index] + given_formula[index + 1:]
-                index -= 1
-        index += 1
+    # index = 0
+    # for check_character in given_formula:  # check spaces: if valid - delete them, else - raise exception
+    #     if check_character == ' ':
+    #         if index - 1 < 0 or index + 1 == len(given_formula) or (
+    #                 given_formula[index - 1] in valid_digits and given_formula[index + 1] in valid_digits) and given_formula[index - 1] != '-':  # invalid
+    #             raise InvalidSpaces
+    #         else:  # valid -> remove space and dec index as a result
+    #             given_formula = given_formula[:index] + given_formula[index + 1:]
+    #             index -= 1
+    #     index += 1
 
-    operator_index = 0
-    for check_character in given_formula:  # converting ~ signs to - signs
-        if check_character == '~' and (given_formula[operator_index - 1] not in valid_digits or operator_index - 1 < 0):
-            given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 1:]
-        else:
-            ValueError("operator '~' is not valid in current place")  # in a case like 3+~4 -> invalid
-        operator_index += 1
-
-    # check for multiple minus signs in a row
-    operator_index = 0
-    changed = False
-    for check_character in given_formula:
-        if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
-            given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
-            changed = True
-        operator_index += 1
-
-    operator_index = 0
-    for check_character in given_formula:  # only if there were multiple minus signs in a row concatenate the plus signs
-        if changed and check_character == '+' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '+':
-            given_formula = given_formula[:operator_index] + given_formula[operator_index + 1:]
-            operator_index -= 1  # if there were a concatenation, index stays in place
-        operator_index += 1
+    # check for multiple minus signs in a row until there is no more than 1 minus sign in the formula
+    while given_formula.count('-') > 1:
+        operator_index = 0
+        for check_character in given_formula:
+            if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
+                given_formula = given_formula[:operator_index] + given_formula[operator_index + 2:]
+            operator_index += 1
 
     return given_formula
 
 
-def ParenthesesValid(formula, parentheses_index):
+def ParenthesesValid(formula, parentheses_start_index, parentheses_end_index):
     """
     check if the parentheses are valid
     :param formula: the formula that needs to be checked
-    :param parentheses_index: the index of the '(' that needs to be checked
+    :param parentheses_start_index: the index of the '(' that needs to be checked
     :return: raise exception if invalid
     """
+    if formula[parentheses_start_index + 1] in operators or formula[parentheses_end_index - 1] in operators:  # if there is an operator after '(' or before ')'
+        raise ValueError("invalid positioning of operators near parentheses!")
+
     if len(formula) <= 1:  # if the parentheses are empty or contain only one char
         raise ValueError("parentheses are empty or contain only 1 char")
 
     can_be_before_parentheses = ['+', '-', '*', '/', '^', '%', '$', '&', '@']
-    if (parentheses_index - 1 > 0 and formula[parentheses_index - 1] not in can_be_before_parentheses) or parentheses_index + 1 >= len(formula):
+    if (parentheses_start_index - 1 > 0 and formula[parentheses_start_index - 1] not in can_be_before_parentheses) or parentheses_start_index + 1 >= len(formula):
         raise ValueError("char before parentheses is not valid in current place")

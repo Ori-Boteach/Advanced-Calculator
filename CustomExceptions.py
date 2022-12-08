@@ -22,6 +22,18 @@ class OddParentheses(Exception):
         return "invalid number of parentheses!"
 
 
+class InvalidFirstChar(Exception):
+    """
+    in case the first char in the formula is an operator
+    """
+
+    def __init__(self, char):
+        self.char = char
+
+    def __str__(self):
+        return "invalid first character: " + self.char
+
+
 class InvalidSpaces(Exception):
     """
     in case there are blank spaces between two numbers

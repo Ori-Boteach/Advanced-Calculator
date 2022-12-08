@@ -169,7 +169,7 @@ class Negation(Operator):  # ~
     def __init__(self):
         pass
 
-    def calculate(self, num, num_not_used):
+    def calculate(self, num_not_used, num):
         """
         :return: the value of the negation of given number
         """
