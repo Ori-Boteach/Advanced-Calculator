@@ -193,6 +193,9 @@ class Factorial(Operator):  # !
         calculating the factorial of the given number
         :return: the value of the given number factorial
         """
+        dot_index = str(float(num)).find('.')
+        if str(float(num))[dot_index+1] != '0':
+            raise ValueError("can't calculate factorial of a non integer number")
         if float(num) < 0:
             raise ValueError("can't calculate factorial of negative number")
         if float(num) == 1:
