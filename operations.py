@@ -43,6 +43,9 @@ class Subtraction(Operator):  # -
         """
         :return: the value of the subtraction of the two given numbers
         """
+        if num2[-1] == '-':
+            num2 = num2[:-1]
+
         if num2 != 0:
             return float(num1) - float(num2)
         else:
@@ -173,6 +176,9 @@ class Negation(Operator):  # ~
         """
         :return: the value of the negation of given number
         """
+        print("num: " + str(num))
+        if len(num) > 1 and num[1] not in valid_near_dot or num == '-':
+            raise ValueError("can't negate operator: " + num)
         return -float(num)
 
     def checkValid(self, index, formula):

@@ -1,6 +1,32 @@
 from main import *
 
 
+def getNumBefore(formula, index):  # getting the WHOLE number BEFORE the operator
+    prior_number = formula[index - 1]
+    i = 1
+    while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
+        if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+            i -= 1
+            break
+        prior_number = formula[index - i - 1] + prior_number
+        i += 1
+    return prior_number
+
+
+def getNumAfter(formula, index):  # getting the WHOLE number AFTER the operator
+    after_number = formula[index + 1]
+    i = 1
+    while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
+        if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+            i -= 1
+            after_number = after_number[0:-1]
+            break
+        print(formula[index + i + 1])
+        after_number += formula[index + i + 1]
+        i += 1
+    return after_number
+
+
 def Calculate(formula):
     """
     calculating the result of the given formula
@@ -32,28 +58,14 @@ def Calculate(formula):
 
             character = formula[index]
             if character in operators:  # if the char is an operator, else inc index
+
                 if priority_dict[character] == current_priority:  # if operator is the right priority
                     operations_dict[character].checkValid(index, formula)  # check if the operator is valid
-                    if index + 1 < len(formula) and index - 1 >= 0:  # if operator is in the middle of the formula
-                        # getting the WHOLE number BEFORE the operator
-                        prior_number = formula[index - 1]
-                        i = 1
-                        while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
-                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
-                                i -= 1
-                                break
-                            prior_number = formula[index - i - 1] + prior_number
-                            i += 1
-                        # getting the WHOLE number AFTER the operator
-                        after_number = formula[index + 1]
-                        i = 1
-                        while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
-                                i -= 1
-                                break
-                            after_number += formula[index + i + 1]
-                            i += 1
 
+                    if index + 1 < len(formula) and index - 1 >= 0:  # if operator is in the middle of the formula
+
+                        prior_number = getNumBefore(formula, index)
+                        after_number = getNumAfter(formula, index)
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise ValueError("invalid number - wrong use of '.'")
                         if character == '~':  # if the operator is negation
@@ -63,15 +75,7 @@ def Calculate(formula):
                         current_result = operations_dict[character].calculate(prior_number, after_number)
 
                     elif index + 1 >= len(formula):  # if the operator is at the end of the formula
-                        # getting the WHOLE number BEFORE the operator
-                        prior_number = formula[index - 1]
-                        i = 1
-                        while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
-                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
-                                i -= 1
-                                break
-                            prior_number = formula[index - i - 1] + prior_number
-                            i += 1
+                        prior_number = getNumBefore(formula, index)
                         after_number = ""
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise ValueError("invalid number - wrong use of '.'")
@@ -79,15 +83,7 @@ def Calculate(formula):
 
                     else:  # if the operator is at the beginning of the formula
                         prior_number = ""
-                        # getting the WHOLE number AFTER the operator
-                        after_number = formula[index + 1]
-                        i = 1
-                        while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-                            if formula[index + i + 1] == '-' and index + i + 1 != 0:  # if there is a minus sign in the middle of the formula - break
-                                i -= 1
-                                break
-                            after_number += formula[index + i + 1]
-                            i += 1
+                        after_number = getNumAfter(formula, index)
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise ValueError("invalid number - wrong use of '.'")
                         current_result = operations_dict[character].calculate("", after_number)
@@ -96,6 +92,7 @@ def Calculate(formula):
                     # everything before the num prior to the operator + the result of the calc + everything after the num after the operator
                     formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
                     print("after operation: " + formula)
+
                     if character != '-':  # if the operator is not a minus sign
                         index = -1  # reset index and start over from the beginning
 

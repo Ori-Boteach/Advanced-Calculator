@@ -2,6 +2,19 @@ from CustomExceptions import *  # import custom exceptions
 from operations import *  # import all the operations
 
 
+def getNumAfter(formula, index):  # getting the WHOLE number AFTER the operator
+    after_number = formula[index + 1]
+    i = 1
+    while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
+        if formula[
+            index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+            i -= 1
+            break
+        after_number += formula[index + i + 1]
+        i += 1
+    return after_number
+
+
 def getNextOperator(operator_index, given_formula):
     """
     get the next operator in the formula after the given index
@@ -13,6 +26,23 @@ def getNextOperator(operator_index, given_formula):
         if check_character in operators:
             return check_character
     return None
+
+
+def ConcatSigns(given_formula):
+    """
+    concatenating '+' sign and then '-' sign to a single '-' sign or double '+' sign to a single '+' sign
+    :param given_formula: the reformatted formula
+    :return: corrected formula
+    """
+    while given_formula.count('+-') > 0 or given_formula.count('++') > 0:
+        operator_index = 0
+        for check_character in given_formula:
+            if check_character == '+' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
+                given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 2:]
+            if check_character == '+' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '+':
+                given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
+            operator_index += 1
+    return given_formula
 
 
 def InitialCheck(given_formula):
@@ -68,24 +98,22 @@ def InitialCheck(given_formula):
     for check_character in given_formula:
         if check_character == '~' and getNextOperator(operator_index, given_formula) == '!':
             raise ValueError("can't perform a factorial on a negative number!")
+        if check_character == '~':
+            after = getNumAfter(given_formula, operator_index)
+            print(after)
+            Negation().calculate(0, after)
         operator_index += 1
 
     # !GOING BY THE SECOND WAY - FULLY CONCATENATING MINUS SIGNS!
-    # check for multiple minus signs in a row until there is no more than 1 minus sign in the formula
-    while given_formula.count('-') > 1:
-        operator_index = 0
-        for check_character in given_formula:
-            if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
-                given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
-            operator_index += 1
-
-    # concat '+' sign and then '-' sign to a single '-' sign
-    while given_formula.count('+-') > 0:
-        operator_index = 0
-        for check_character in given_formula:
-            if check_character == '+' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
-                given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 2:]
-            operator_index += 1
+    # check for multiple minus signs in a row until there is no more than 1 minus sign in the formula (per a set of parentheses)
+    operator_index = 0
+    for check_character in given_formula:
+        if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[
+            operator_index + 1] == '-':
+            given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
+            print(given_formula)
+        operator_index += 1
+    given_formula = ConcatSigns(given_formula)
 
     return given_formula
 
