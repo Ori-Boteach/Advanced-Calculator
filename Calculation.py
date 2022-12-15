@@ -22,14 +22,12 @@ def Calculate(formula):
             for character in formula:  # go over the formula
                 if character in operators and character != '-':
                     flag = True
-            if not flag and formula.count(
-                    '.') > 1:  # if the final result and there are more than 1 dot, raise exception
+            if not flag and formula.count('.') > 1:  # if the final result and there are more than 1 dot, raise exception
                 raise ValueError("invalid number - wrong use of '.'")
             if not flag and formula[0] == '-':  # if there are no more operations to be done, result is negative, break
                 break
 
-            if formula[
-                0] == '+':  # if the first character is '+', remove it (knowing that it's a result of concatenation of minus signs)
+            if formula[0] == '+':  # if the first character is '+', remove it (knowing that it's a result of concatenation of minus signs)
                 formula = formula.replace('+', '')
 
             character = formula[index]
@@ -41,8 +39,7 @@ def Calculate(formula):
                         prior_number = formula[index - 1]
                         i = 1
                         while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
-                            if formula[
-                                index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
                                 i -= 1
                                 break
                             prior_number = formula[index - i - 1] + prior_number
@@ -51,15 +48,13 @@ def Calculate(formula):
                         after_number = formula[index + 1]
                         i = 1
                         while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-                            if formula[
-                                index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
                                 i -= 1
                                 break
                             after_number += formula[index + i + 1]
                             i += 1
 
-                        if after_number.count('.') > 1 or prior_number.count(
-                                '.') > 1:  # if there are more than 1 dot in a number
+                        if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise ValueError("invalid number - wrong use of '.'")
                         if character == '~':  # if the operator is negation
                             prior_number = ""
@@ -72,15 +67,13 @@ def Calculate(formula):
                         prior_number = formula[index - 1]
                         i = 1
                         while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
-                            if formula[
-                                index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                            if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
                                 i -= 1
                                 break
                             prior_number = formula[index - i - 1] + prior_number
                             i += 1
                         after_number = ""
-                        if after_number.count('.') > 1 or prior_number.count(
-                                '.') > 1:  # if there are more than 1 dot in a number
+                        if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise ValueError("invalid number - wrong use of '.'")
                         current_result = operations_dict[character].calculate(prior_number, "")
 
@@ -90,8 +83,7 @@ def Calculate(formula):
                         after_number = formula[index + 1]
                         i = 1
                         while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-                            if formula[
-                                index + i + 1] == '-' and index + i + 1 != 0:  # if there is a minus sign in the middle of the formula - break
+                            if formula[index + i + 1] == '-' and index + i + 1 != 0:  # if there is a minus sign in the middle of the formula - break
                                 i -= 1
                                 break
                             after_number += formula[index + i + 1]
@@ -102,8 +94,7 @@ def Calculate(formula):
 
                     # update the formula:
                     # everything before the num prior to the operator + the result of the calc + everything after the num after the operator
-                    formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(
-                        after_number) + 1:]
+                    formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
                     print("after operation: " + formula)
                     if character != '-':  # if the operator is not a minus sign
                         index = -1  # reset index and start over from the beginning
@@ -118,7 +109,7 @@ def CalculateParentheses(formula):  # take care of the calculation of the parent
     index = 0
     found = False
     for character in formula:  # go over the formula
-        if character == ')' and not found:
+        if character == ')' and not found:  # if there is a closing parenthesis without an opening one
             raise ValueError("wrong order! not using parentheses correctly")
 
         if character == '(':  # if a '(' is found

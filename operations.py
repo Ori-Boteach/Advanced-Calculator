@@ -224,6 +224,11 @@ class SumDigits(Operator):  # #
         :return: the sum of the digits of the given number
         """
         num = int(num)
+        flag = False
+        if num < 0:
+            num *= -1
+            flag = True
+
         sum_digits = 0
         while num != 0:
             sum_digits += num % 10
@@ -231,6 +236,10 @@ class SumDigits(Operator):  # #
 
         while sum_digits >= 10:
             sum_digits = sum_digits // 10 + sum_digits % 10
+
+        if flag:
+            return -sum_digits
+
         return sum_digits
 
     def checkValid(self, index, formula):

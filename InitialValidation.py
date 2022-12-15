@@ -2,6 +2,19 @@ from CustomExceptions import *  # import custom exceptions
 from operations import *  # import all the operations
 
 
+def getNextOperator(operator_index, given_formula):
+    """
+    get the next operator in the formula after the given index
+    :param operator_index: starts checking for an operator from this index
+    :param given_formula: the inputted formula from the user
+    :return: the found operator
+    """
+    for check_character in given_formula[operator_index + 1:]:
+        if check_character in operators:
+            return check_character
+    return None
+
+
 def InitialCheck(given_formula):
     """
     checking if the given formula is valid and making necessary initial changes
@@ -50,23 +63,28 @@ def InitialCheck(given_formula):
             given_formula = given_formula[:index] + '0.' + given_formula[index + 1:]
         index += 1
 
-    # index = 0
-    # for check_character in given_formula:  # check spaces: if valid - delete them, else - raise exception
-    #     if check_character == ' ':
-    #         if index - 1 < 0 or index + 1 == len(given_formula) or (
-    #                 given_formula[index - 1] in valid_digits and given_formula[index + 1] in valid_digits) and given_formula[index - 1] != '-':  # invalid
-    #             raise InvalidSpaces
-    #         else:  # valid -> remove space and dec index as a result
-    #             given_formula = given_formula[:index] + given_formula[index + 1:]
-    #             index -= 1
-    #     index += 1
+    # check for contradiction of ~ before !
+    operator_index = 0
+    for check_character in given_formula:
+        if check_character == '~' and getNextOperator(operator_index, given_formula) == '!':
+            raise ValueError("can't perform a factorial on a negative number!")
+        operator_index += 1
 
+    # !GOING BY THE SECOND WAY - FULLY CONCATENATING MINUS SIGNS!
     # check for multiple minus signs in a row until there is no more than 1 minus sign in the formula
     while given_formula.count('-') > 1:
         operator_index = 0
         for check_character in given_formula:
             if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
-                given_formula = given_formula[:operator_index] + given_formula[operator_index + 2:]
+                given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
+            operator_index += 1
+
+    # concat '+' sign and then '-' sign to a single '-' sign
+    while given_formula.count('+-') > 0:
+        operator_index = 0
+        for check_character in given_formula:
+            if check_character == '+' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
+                given_formula = given_formula[:operator_index] + '-' + given_formula[operator_index + 2:]
             operator_index += 1
 
     return given_formula
