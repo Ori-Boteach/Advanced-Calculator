@@ -1,4 +1,5 @@
-from math import *
+from math import pow  # Module math
+from CustomExceptions import *  # path: CustomExceptions.py
 
 operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@', '~', '!', '#']
 middle_operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@']
@@ -185,7 +186,7 @@ class Negation(Operator):  # ~
         """
         print(formula[index + 1])
         if index + 1 == len(formula) or formula[index + 1] not in valid_digits:
-            raise ValueError("operator '~' is not in in current index: " + str(index) + ", formula: " + formula)
+            raise ValueError("operator '~' is not correct in current index: " + str(index) + ", formula: " + formula)
 
 
 class Factorial(Operator):  # !
@@ -201,7 +202,7 @@ class Factorial(Operator):  # !
         if str(float(num))[dot_index+1] != '0':
             raise ValueError("can't calculate factorial of a non integer number: " + str(num))
         if float(num) < 0:
-            raise ValueError("can't calculate factorial of negative number " + str(num))
+            raise NegativeFactorial(str(num))
         if float(num) == 1:
             return 1
         return float(num) * self.calculate(float(num) - 1, num_not_used)

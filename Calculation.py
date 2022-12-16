@@ -1,5 +1,5 @@
-from InitialValidation import ParenthesesValid
-from Operations import *
+from InitialValidation import ParenthesesValid  # path: InitialValidation.py
+from Operations import *  # path: Operations.py
 
 
 def getNumBefore(formula, index):
@@ -61,7 +61,7 @@ def Calculate(formula):
                     flag = True
 
             if not flag and formula.count('.') > 1:  # if the final result and there are more than 1 dot, raise exception
-                raise ValueError("invalid number - wrong use of '.'")
+                raise InvalidDotsUse()
             if not flag and formula[0] == '-':  # if there are no more operations to be done, result is negative, break
                 break
 
@@ -79,7 +79,7 @@ def Calculate(formula):
                         prior_number = getNumBefore(formula, index)
                         after_number = getNumAfter(formula, index)
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
-                            raise ValueError("invalid number - wrong use of '.'")
+                            raise InvalidDotsUse()
                         if character == '~':  # if the operator is negation
                             prior_number = ""
                         if character == '!' or character == '#':  # if the operator is factorial or sum digits
@@ -90,14 +90,14 @@ def Calculate(formula):
                         prior_number = getNumBefore(formula, index)
                         after_number = ""
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
-                            raise ValueError("invalid number - wrong use of '.'")
+                            raise InvalidDotsUse()
                         current_result = operations_dict[character].calculate(prior_number, "")
 
                     else:  # if the operator is at the beginning of the formula
                         prior_number = ""
                         after_number = getNumAfter(formula, index)
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
-                            raise ValueError("invalid number - wrong use of '.'")
+                            raise InvalidDotsUse()
                         current_result = operations_dict[character].calculate("", after_number)
 
                     # update the formula:
