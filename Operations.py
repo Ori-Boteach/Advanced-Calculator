@@ -9,8 +9,7 @@ valid_near_dot = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 def checkValidForMiddleOperator(MiddleOperator, operator_index, formula):
     if (operator_index - 1 < 0 or operator_index + 1 == len(formula) or formula[
         operator_index - 1] not in valid_digits or formula[operator_index + 1] not in valid_digits) and formula[operator_index - 1] != '!':
-        raise ValueError("operator '" + MiddleOperator + "' is not valid in current index: " + str(
-            operator_index) + ", formula: " + formula)
+        raise ValueError("operator '" + MiddleOperator + "' is not valid in current index: " + str(operator_index) + ", formula: " + formula)
 
 
 class Operator(object):  # the base class for all operators
@@ -53,8 +52,7 @@ class Subtraction(Operator):  # -
 
     def checkValid(self, index, formula):
         if len(formula) == 1 or formula[index + 1] not in valid_digits:
-            raise ValueError("operator '-' is not valid in current index: " + str(
-                index) + ", formula: " + formula)
+            raise ValueError("operator '-' is not valid in current index: " + str(index) + ", formula: " + formula)
 
 
 class Multiplication(Operator):  # *
@@ -83,8 +81,8 @@ class Division(Operator):  # /
 
     def checkValid(self, index, formula):
         checkValidForMiddleOperator('/', index, formula)
-        if formula[index + 1] == 0:
-            raise ZeroDivisionError("can't divide by zero")
+        if formula[index + 1] == '0':
+            raise ZeroDivisionError("can't divide by zero in formula: " + formula)
 
 
 class Pow(Operator):  # ^
@@ -176,7 +174,6 @@ class Negation(Operator):  # ~
         """
         :return: the value of the negation of given number
         """
-        print("num: " + str(num))
         if len(num) > 1 and num[1] not in valid_near_dot or num == '-':
             raise ValueError("can't negate operator: " + num)
         return -float(num)
@@ -186,8 +183,9 @@ class Negation(Operator):  # ~
         checking if '~' char in the given formula is valid
         :return: True if valid, False otherwise
         """
+        print(formula[index + 1])
         if index + 1 == len(formula) or formula[index + 1] not in valid_digits:
-            raise ValueError("operator '~' is not in a correct place")
+            raise ValueError("operator '~' is not in in current index: " + str(index) + ", formula: " + formula)
 
 
 class Factorial(Operator):  # !
@@ -201,9 +199,9 @@ class Factorial(Operator):  # !
         """
         dot_index = str(float(num)).find('.')
         if str(float(num))[dot_index+1] != '0':
-            raise ValueError("can't calculate factorial of a non integer number")
+            raise ValueError("can't calculate factorial of a non integer number: " + str(num))
         if float(num) < 0:
-            raise ValueError("can't calculate factorial of negative number")
+            raise ValueError("can't calculate factorial of negative number " + str(num))
         if float(num) == 1:
             return 1
         return float(num) * self.calculate(float(num) - 1, num_not_used)
@@ -215,9 +213,9 @@ class Factorial(Operator):  # !
         """
         if index + 1 < len(formula):
             if index - 1 < 0 or formula[index - 1] not in valid_digits:
-                raise ValueError("operator '!' is not in a correct place")
+                raise ValueError("operator '!' is not in in current index: " + str(index) + ", formula: " + formula)
             if formula[index + 1] in valid_digits:
-                raise ValueError("missing operator after '!'")
+                raise ValueError("missing operator after '!' in index: " + str(index) + ", formula: " + formula)
 
 
 class SumDigits(Operator):  # #
@@ -255,6 +253,6 @@ class SumDigits(Operator):  # #
         """
         if index + 1 < len(formula):
             if formula[index - 1] not in valid_digits:
-                raise ValueError("operator '#' is not in a correct place")
+                raise ValueError("operator '#' is not valid in current index: " + str(index) + ", formula: " + formula)
             if index + 1 != len(formula) and formula[index + 1] in valid_digits:
-                raise ValueError("missing operator after '#'")
+                raise ValueError("missing operator after '#' in index: " + str(index) + ", formula: " + formula)

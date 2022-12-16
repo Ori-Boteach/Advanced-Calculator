@@ -2,7 +2,6 @@ class EmptyParentheses(Exception):
     """
     in case there is a ')' after a '('
     """
-
     def __init__(self):
         pass
 
@@ -14,7 +13,6 @@ class OddParentheses(Exception):
     """
     in case number of parentheses doesn't add up
     """
-
     def __init__(self):
         pass
 
@@ -26,7 +24,6 @@ class InvalidFirstChar(Exception):
     """
     in case the first char in the formula is an operator
     """
-
     def __init__(self, char):
         self.char = char
 
@@ -34,13 +31,12 @@ class InvalidFirstChar(Exception):
         return "invalid first character: " + self.char
 
 
-class InvalidSpaces(Exception):
+class EmptyFormula(Exception):
     """
-    in case there are blank spaces between two numbers
+    in case the formula is empty after deleting spaces
     """
-
     def __init__(self):
         pass
 
     def __str__(self):
-        return "invalid use of blank spaces"
+        return "empty formula!"
