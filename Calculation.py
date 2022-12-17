@@ -1,4 +1,4 @@
-from InitialValidation import ParenthesesValid  # path: InitialValidation.py
+from InitialValidation import ParenthesesValid, CheckForConcatination  # path: InitialValidation.py
 from Operations import *  # path: Operations.py
 
 
@@ -30,8 +30,12 @@ def getNumAfter(formula, index):
     after_number = ""
     i = 0
     while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-        if formula[index + 1] == '-':  # if there is a minus sign in the middle of the formula - break
+        # if there is a minus sign, recursively call the function to get the whole number, then add the minus sign and break
+        if formula[index + 1] == '-':
             after_number = '-' + getNumAfter(formula, index + 1)
+            break
+        # if there is an operator in the middle of the formula - break
+        if formula[index + i+1] in operators:
             break
         after_number += formula[index + i + 1]
         i += 1
@@ -53,15 +57,17 @@ def Calculate(formula):
     while current_priority > 0:  # scan the formula for each priority
         index = 0
         while index < len(formula):  # go over the formula
+            check = False  # boolean flag -> not changing the formula if it starts with a minus sign
 
             flag = False  # a flag to check if there are still operations to be done
             for character in formula:  # go over the formula
                 if character in operators and character != '-':
                     flag = True
 
-            if not flag and formula.count('.') > 1:  # if the final result and there are more than 1 dot, raise exception
+            # if the final result and there are more than 1 dot, raise exception
+            if not flag and formula.count('.') > 1 and formula[0] == '-' and formula.count("-") == 1:
                 raise InvalidDotsUse()
-            if not flag and formula[0] == '-':  # if there are no more operations to be done, result is negative, break
+            if not flag and formula[0] == '-' and formula.count("-") == 1:  # if there are no more operations to be done, result is negative, break
                 break
 
             if formula[0] == '+':  # if the first character is '+', remove it (knowing that it's a result of concatenation of minus signs)
@@ -74,9 +80,10 @@ def Calculate(formula):
                     operations_dict[character].checkValid(index, formula)  # check if the operator is valid
 
                     if index + 1 < len(formula) and index - 1 >= 0:  # if operator is in the middle of the formula
-
                         prior_number = getNumBefore(formula, index)
+                        prior_number = CheckForConcatination(prior_number)  # concatenate signs if needed
                         after_number = getNumAfter(formula, index)
+                        after_number = CheckForConcatination(after_number)  # concatenate signs if needed
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise InvalidDotsUse()
                         if character == '~':  # if the operator is negation
@@ -97,11 +104,16 @@ def Calculate(formula):
                         after_number = getNumAfter(formula, index)
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
                             raise InvalidDotsUse()
-                        current_result = operations_dict[character].calculate("", after_number)
+                        if formula[0] != '-':  # if the formula starts with a minus sign
+                            current_result = operations_dict[character].calculate("", after_number)
+                        else:  # if the formula starts with a minus sign
+                            current_result = ""
+                            check = True
 
                     # update the formula:
                     # everything before the num prior to the operator + the result of the calc + everything after the num after the operator
-                    formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
+                    if not check:
+                        formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
 
                     if character != '-':  # if the operator is not a minus sign
                         index = -1  # reset index and start over from the beginning
