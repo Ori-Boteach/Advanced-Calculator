@@ -27,12 +27,11 @@ def getNumAfter(formula, index):
     :param index: starting index
     :return: the whole number after the operator
     """
-    after_number = formula[index + 1]
-    i = 1
+    after_number = ""
+    i = 0
     while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-        if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
-            i -= 1
-            after_number = after_number[0:-1]
+        if formula[index + 1] == '-':  # if there is a minus sign in the middle of the formula - break
+            after_number = '-' + getNumAfter(formula, index + 1)
             break
         after_number += formula[index + i + 1]
         i += 1
@@ -116,7 +115,7 @@ def CalculateParentheses(formula):  # take care of the calculation of the parent
     found = False
     for character in formula:  # go over the formula
         if character == ')' and not found:  # if there is a closing parenthesis without an opening one
-            raise ValueError("wrong order! not using parentheses correctly")
+            raise ParenthesesException()
 
         if character == '(':  # if a '(' is found
             parentheses_index = formula.rfind(character)  # find the last index of the '('

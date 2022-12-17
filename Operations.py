@@ -94,7 +94,12 @@ class Pow(Operator):  # ^
         """
         :return: the value of the pow of the first given number by the second given number
         """
-        return pow(float(num1), float(num2))
+        if float(num1) < 0 and float(num2) == 0.5:
+            raise ValueError("can't calculate the root of a negative number!")
+        try:
+            return pow(float(num1), float(num2))
+        except OverflowError:
+            raise OverflowError("can't calculate the pow of the given numbers: " + str(num1) + ", " + str(num2))
 
     def checkValid(self, index, formula):
         checkValidForMiddleOperator('^', index, formula)
@@ -112,6 +117,8 @@ class DivisionRemainder(Operator):  # %
 
     def checkValid(self, index, formula):
         checkValidForMiddleOperator('%', index, formula)
+        if formula[index + 1] == '0':
+            raise ZeroDivisionError("can't divide by zero in formula: " + formula)
 
 
 class Maximum(Operator):  # $
@@ -184,7 +191,6 @@ class Negation(Operator):  # ~
         checking if '~' char in the given formula is valid
         :return: True if valid, False otherwise
         """
-        print(formula[index + 1])
         if index + 1 == len(formula) or formula[index + 1] not in valid_digits:
             raise ValueError("operator '~' is not correct in current index: " + str(index) + ", formula: " + formula)
 
@@ -201,6 +207,8 @@ class Factorial(Operator):  # !
         dot_index = str(float(num)).find('.')
         if str(float(num))[dot_index+1] != '0':
             raise ValueError("can't calculate factorial of a non integer number: " + str(num))
+        if float(num) > 170:
+            raise ValueError("can't calculate factorial of a number bigger than 170")
         if float(num) < 0:
             raise NegativeFactorial(str(num))
         if float(num) == 1:
@@ -228,6 +236,12 @@ class SumDigits(Operator):  # #
         calculating the sum of the digits of the given number
         :return: the sum of the digits of the given number
         """
+        if num[num.rfind('.')+1:] == '0':
+            num = num[:num.rfind('.')]
+
+        if num[num.rfind('.')+1:] in valid_digits:
+            num = num[:num.rfind('.')] + num[num.rfind('.')+1:]
+
         num = int(num)
         flag = False
         if num < 0:
@@ -238,9 +252,6 @@ class SumDigits(Operator):  # #
         while num != 0:
             sum_digits += num % 10
             num = num // 10
-
-        while sum_digits >= 10:
-            sum_digits = sum_digits // 10 + sum_digits % 10
 
         if flag:
             return -sum_digits

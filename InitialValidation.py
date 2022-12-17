@@ -10,6 +10,9 @@ def InitialCheck(given_formula):
     :param given_formula: the initial formula that needs to be checked
     :return: if general check invalid, raises custom exception with the relevant message, else, returns the new formula
     """
+    if len(given_formula) == 0:
+        raise EmptyFormula()
+
     InvalidFirstCharCheck(given_formula)
     given_formula = SpacesAndTabsCheck(given_formula)
     InvalidParenthesesCheck(given_formula)
@@ -30,22 +33,27 @@ def InvalidFirstCharCheck(given_formula):
 
 def SpacesAndTabsCheck(given_formula):
     for check_character in given_formula:
-        if check_character == '\t':  # if there are tabs in the formula delete them
+        # if there are tabs in the formula delete them
+        if check_character == '\t':
             given_formula = given_formula.replace('\t', '')
 
     for check_character in given_formula:
-        if check_character == ' ':  # if there are spaces in the formula allow it -> delete them
+        # if there are spaces in the formula allow it -> delete them
+        if check_character == ' ':
             given_formula = given_formula.replace(' ', '')
 
-    if len(given_formula) == 0:  # if the formula is empty after deleting spaces
+    # if the formula is empty after deleting spaces
+    if len(given_formula) == 0:
         raise EmptyFormula()
     return given_formula
 
 
 def InvalidParenthesesCheck(given_formula):
-    if given_formula.count('(') != given_formula.count(')'):  # in case number of parentheses is odd -> doesn't add up
+    # in case number of parentheses is odd -> doesn't add up
+    if given_formula.count('(') != given_formula.count(')'):
         raise OddParentheses
-    if given_formula[-1] == '(' or given_formula[0] == ')':  # if there is a '(' at the end of the formula or a ')' at the beginning
+    # if there is a '(' at the end of the formula or a ')' at the beginning
+    if given_formula[-1] == '(' or given_formula[0] == ')':
         raise EmptyParentheses
     for check_character in given_formula:
         # in case of parentheses with invalid content
@@ -62,16 +70,26 @@ def InvalidInputtedChars(given_formula):
 
 def InvalidDotsAndCorrection(given_formula):
     index = 0
-    for check_character in given_formula:  # check for invalid '.' placement
+    # add '0' after '.' that doesn't have a number after it
+    for check_character in given_formula:
+        if check_character == '.' and (given_formula[index + 1] not in valid_near_dot or index + 1 >= len(given_formula)):
+            given_formula = given_formula[:index + 1] + '0' + given_formula[index + 1:]
+        index += 1
+
+    index = 0
+    # check for invalid '.' placement
+    for check_character in given_formula:
         if check_character == '.' and given_formula[index + 1] not in valid_near_dot:
             raise InvalidDots(index)
         index += 1
 
     index = 0
-    for check_character in given_formula:  # add '0' before '.' that doesn't have a number in front of it
+    # add '0' before '.' that doesn't have a number in front of it
+    for check_character in given_formula:
         if check_character == '.' and (given_formula[index - 1] not in valid_near_dot or index - 1 < 0):
             given_formula = given_formula[:index] + '0.' + given_formula[index + 1:]
         index += 1
+
     return given_formula
 
 
@@ -95,11 +113,12 @@ def getNumAfter(formula, index):
     :param index: starting index
     :return: the whole number after the operator
     """
-    after_number = formula[index + 1]
-    i = 1
+    after_number = ""
+    i = 0
     while index + i + 1 < len(formula) and formula[index + i + 1] in valid_digits:
-        if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
-            i -= 1
+        # if there is a minus sign, recursively call the function to get the whole number, then add the minus sign and break
+        if formula[index + 1] == '-':
+            after_number = '-' + getNumAfter(formula, index + 1)
             break
         after_number += formula[index + i + 1]
         i += 1
@@ -108,11 +127,12 @@ def getNumAfter(formula, index):
 
 def NegationCheck(given_formula):
     operator_index = 0
-    for check_character in given_formula:  # check for contradiction of '~' before '!'
+    # check for contradiction of '~' before '!'
+    for check_character in given_formula:
         if check_character == '~' and getNextOperator(operator_index, given_formula) == '!':
             after = '-' + getNumAfter(given_formula, operator_index)
             raise NegativeFactorial(after)
-        if check_character == '~':
+        if check_character == '~' and getNumAfter(given_formula, operator_index).rfind('(') == 0:
             after = getNumAfter(given_formula, operator_index)
             Negation().checkValid(operator_index, given_formula)
             Negation().calculate(0, after)
@@ -141,9 +161,11 @@ def CheckForConcatination(given_formula):
     # check for multiple minus signs in a row and concatenate them
     operator_index = 0
     for check_character in given_formula:
-        if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[
-            operator_index + 1] == '-':
-            given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
+        if check_character == '-' and operator_index + 1 < len(given_formula) and given_formula[operator_index + 1] == '-':
+            if given_formula[operator_index - 1] != '~':  # check for a case like "~--2"
+                given_formula = given_formula[:operator_index] + '+' + given_formula[operator_index + 2:]
+            else:
+                given_formula = given_formula[:operator_index] + given_formula[operator_index + 2:]
         operator_index += 1
     given_formula = ConcatSigns(given_formula)
     return given_formula
@@ -157,10 +179,12 @@ def ParenthesesValid(formula, parentheses_start_index, parentheses_end_index):
     :param parentheses_end_index: the index of the ')' that it's positioning needs to be checked
     :return: raise exception if invalid
     """
-    if formula[parentheses_start_index + 1] in operators or formula[parentheses_end_index - 1] in operators:  # if there is an operator after '(' or before ')'
+    # if there is an operator after '(' or before ')'
+    if (formula[parentheses_start_index + 1] in operators and formula[parentheses_start_index + 1] != '-') or (formula[parentheses_end_index - 1] in operators and formula[parentheses_start_index + 1] != '-'):
         raise InvalidNextToParentheses
 
-    if len(formula) <= 1:  # if the parentheses are empty or contain only one char
+    # if the parentheses are empty or contain only one char
+    if len(formula) <= 1:
         raise EmptyParentheses
 
     can_be_before_parentheses = ['+', '-', '*', '/', '^', '%', '$', '&', '@']

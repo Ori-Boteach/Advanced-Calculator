@@ -1,4 +1,4 @@
-class ParenthesesException(Exception):
+class ParenthesesException(SyntaxError):
     """
     the base class exception for all parentheses exceptions
     """
@@ -6,7 +6,7 @@ class ParenthesesException(Exception):
         pass
 
     def __str__(self):
-        pass
+        return "wrong order! not using parentheses correctly"
 
 
 class EmptyParentheses(ParenthesesException):
@@ -42,7 +42,7 @@ class OddParentheses(ParenthesesException):
         return "invalid number of parentheses!"
 
 
-class InvalidFirstChar(Exception):
+class InvalidFirstChar(SyntaxError):
     """
     in case the first char in the formula is an operator
     """
@@ -50,10 +50,10 @@ class InvalidFirstChar(Exception):
         self.char = char
 
     def __str__(self):
-        return "invalid first character: " + self.char
+        return "Invalid first character: " + self.char
 
 
-class EmptyFormula(Exception):
+class EmptyFormula(SyntaxError):
     """
     in case the formula is empty after deleting spaces
     """
@@ -61,10 +61,10 @@ class EmptyFormula(Exception):
         pass
 
     def __str__(self):
-        return "empty formula!"
+        return "EMPTY formula!"
 
 
-class InvalidInput(Exception):
+class InvalidInput(SyntaxError):
     """
     in case a char in the input is invalid
     """
@@ -76,7 +76,7 @@ class InvalidInput(Exception):
         return "char '" + self.check_character + "' is invalid in index " + str(self.given_formula.index(self.check_character)) + " of the formula!"
 
 
-class InvalidDots(Exception):
+class InvalidDots(SyntaxError):
     """
     in case a char in the input is invalid
     """
@@ -87,7 +87,7 @@ class InvalidDots(Exception):
         return "chars '.' in indexes " + str(self.index) + " and " + str(self.index + 1) + " are invalid!"
 
 
-class InvalidDotsUse(Exception):
+class InvalidDotsUse(SyntaxError):
     """
     in case there was a misuse of the '.' operator
     """
@@ -98,7 +98,7 @@ class InvalidDotsUse(Exception):
         return "invalid use of '.'"
 
 
-class NegativeFactorial(Exception):
+class NegativeFactorial(ValueError):
     """
     in case a char in the input is invalid
     """
