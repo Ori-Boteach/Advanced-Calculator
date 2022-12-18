@@ -1,24 +1,74 @@
+# Project's Author: Ori Boteach
+from Calculation import *   # Path: Calculation.py
+from InitialValidation import *  # Path: InitialValidation.py
+
+
+def OpeningMessage():
+    """
+    printing the opening message
+    """
+    print("WELCOME TO YOUR ADVANCED CALCULATOR! made by @Ori_Boteach")
+    print("Addition: +, Subtraction: -, Multiplication: *, Division: /, Pow: ^, Division Remainder: %")
+    print("Maximum: $, Minimum: &, Average: @, Negation(prefix): ~, Factorial(postfix): !, Sum Digits(postfix): #")
+
+
+def callFunctionsByOrder(input_formula):
+    try:
+        new_formula = InitialCheck(input_formula)
+        if new_formula != input_formula:
+            input_formula = new_formula
+            print("More elegantly, your formula is: " + input_formula)
+    except SyntaxError as e:
+        print(e)
+        return str(e)
+    except ValueError as e:
+        print(e)
+        return str(e)
+
+    try:
+        input_formula = CalculateParentheses(input_formula)  # take care of the parentheses calculations
+        input_formula = CheckForConcatination(input_formula)  # after the parentheses calculations, check for AGAIN for concatination
+        print("it's RESULT: " + Calculate(input_formula))  # calculate the result of the formula and print it
+        return Calculate(input_formula)
+    except SyntaxError as e:
+        print(e)
+        return str(e)
+    except ValueError as e:
+        print(e)
+        return str(e)
+    except ZeroDivisionError as e:
+        print(e)
+        return str(e)
+    except OverflowError as e:
+        print(e)
+        return str(e)
+
+
+def try_again():
+    try:
+        pressed = input("Press 'q' to quit or any other key (except ctrl+d) to continue: ")
+        if pressed == 'q':
+            return False
+        return True
+
+    except EOFError:  # if the user pressed ctrl+d when trying to enter a key
+        print("Invalid key! Please restart the program")
+        exit(1)
+
+
 if __name__ == '__main__':
-    operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@', '~', '!', '.', ' ']
-    middle_operators = ['+', '-', '*', '/', '^', '%', '$', '&', '@']
-    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', ' ']
 
-    equation = input("enter an equation: ")
+    OpeningMessage()
+    wants_again = True
+    while wants_again:
+        try:
+            formula = input("Please enter a formula: ")
+        except EOFError:
+            print("Invalid formula! Please restart the program")
+            break
 
-    if equation.count('(') != equation.count(')'):  # in case number of parentheses doesn't add up
-        print("invalid number of parentheses")
+        callFunctionsByOrder(formula)
 
-    for char in equation:
-        if char not in operators and char not in numbers:  # in case a char in the input is invalid
-            print("char " + char + " is invalid!")
+        wants_again = try_again()
 
-    for char in equation:
-        if char == '(' and equation[equation.rfind(char) + 1] == ')':  # in case there is a ')' after a '('
-            print("invalid parentheses")
-
-    for char in equation:
-        if char in middle_operators:
-            indexOfChar = equation.rfind(char)
-            if indexOfChar - 1 < 0 or indexOfChar + 1 == len(equation) or equation[indexOfChar - 1] not in numbers or equation[indexOfChar + 1] not in numbers:
-                print("operator '" + char + "' is not in a correct place")
-
+    print("THANK YOU FOR USING MY CALCULATOR! HOPE TO SEE YOU AGAIN SOON :)")
