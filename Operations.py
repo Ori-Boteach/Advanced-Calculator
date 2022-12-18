@@ -1,3 +1,4 @@
+# Project's Author: Ori Boteach
 from math import pow  # Module math
 from CustomExceptions import *  # path: CustomExceptions.py
 

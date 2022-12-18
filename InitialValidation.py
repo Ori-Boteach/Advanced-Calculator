@@ -1,3 +1,4 @@
+# Project's Author: Ori Boteach
 from Operations import *  # path: Operations.py
 
 chars_valid = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')', ' ',

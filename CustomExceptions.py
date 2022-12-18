@@ -1,3 +1,4 @@
+# Project's Author: Ori Boteach
 class ParenthesesException(SyntaxError):
     """
     the base class exception for all parentheses exceptions
