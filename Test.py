@@ -3,12 +3,9 @@ from main import *
 
 def test_syntax_exceptions():
     assert callFunctionsByOrder("12.12.12") == "invalid use of '.'"
-    assert callFunctionsByOrder("2^*3") == "operator '^' is not valid in current index: 1, formula: 2^*3"
+    assert callFunctionsByOrder("1/1000000") == "WOW! the calculator can't handle the result of the operator /'s calculation!"
     assert callFunctionsByOrder("2-+3") == "operator '-' is not valid in current index: 1, formula: 2-+3"
     assert callFunctionsByOrder("2+3-") == "operator '-' is not valid in current index: 3, formula: 5.0-"
-    assert callFunctionsByOrder("2+*3") == "operator '*' is not valid in current index: 2, formula: 2+*3"
-    assert callFunctionsByOrder("2+/3") == "operator '/' is not valid in current index: 2, formula: 2+/3"
-    assert callFunctionsByOrder("!2+3/") == "Invalid first character: !"
     assert callFunctionsByOrder("~2~3!") == "can't perform a factorial on a negative number: -3"
 
 
@@ -16,7 +13,7 @@ def test_odd_and_empty_inputs():
     assert callFunctionsByOrder("abcdefg") == "char 'a' is invalid in index 0 of the formula!"
     assert callFunctionsByOrder("ori's calculator is the best") == "char 'o' is invalid in index 0 of the formula!"
     assert callFunctionsByOrder("") == "EMPTY formula!"
-    assert callFunctionsByOrder("  ") == "EMPTY formula!"
+    assert callFunctionsByOrder(" -  ") == "Invalid first character: -"
     assert callFunctionsByOrder("\t") == "EMPTY formula!"
     assert callFunctionsByOrder("\t   \t      \t      ") == "EMPTY formula!"
 
@@ -38,6 +35,18 @@ def test_simple_formulas():
     assert callFunctionsByOrder("99##") == "9.0"
 
 
+def test_minuses_and_negation():
+    assert callFunctionsByOrder("2--3") == "5.0"
+    assert callFunctionsByOrder("2-~3!") == "can't perform a factorial on a negative number: -3"
+    assert callFunctionsByOrder("2--3!") == "8.0"
+    assert callFunctionsByOrder("2---3#") == "-1.0"
+    assert callFunctionsByOrder("---3") == "-3"
+    assert callFunctionsByOrder("2---3!") == "-4.0"
+    assert callFunctionsByOrder("-3!") == "can't perform a factorial on a negative number: -3"
+    assert callFunctionsByOrder("2--~3") == "-1.0"
+    assert callFunctionsByOrder("--~---~3") == "can't negate operator: ---"
+
+
 def test_complex_formulas():
     assert callFunctionsByOrder("((~(4^   3!$9-8 @33)  )&9*  21 #-   93218#)@42  069") == "-372162.25"
     assert callFunctionsByOrder("(122+33*(   4^3! $ (9- 8@33 ) ) )$ ( 9*  3! - 93218# )") == "135290.0"
@@ -53,7 +62,4 @@ def test_complex_formulas():
     assert callFunctionsByOrder("1!+2!   -33#+4  4$55&77  ^0-88*9  9--~(1  @2@3#-4%3)^2") == "-8715.5625"
     assert callFunctionsByOrder("731+~(31321)*2 *-321 --- (3!$89@321321$312^0.5)") == "20108412.11971862"
     assert callFunctionsByOrder("((--(-1-  (-2%6  ^7&6)- -0.89)+3  #/2)--1) @1@1@1@2--8$7") == "-246.41312499999998"
-    # assert callFunctionsByOrder("--(54  3*0.69  )#/123--(9!-~3@  9$  2^  3) ---(365^(55-(32+23)))") == "362853.0650406504"
-    # assert callFunctionsByOrder("(8 8 @  8%8#+8!  ^8/8+88)---   (77^0.77@ 77#-77 7.7)") == "8.73120530892689e+35"
-    # assert callFunctionsByOrder("(  324%3-  (31^2-19!%89-432+3@1)  *0.69420+  (5^435@1) )  ^0.00069420") == "1.2757895631250789"
-    # assert callFunctionsByOrder("(~-----(321312*32)%2^31)*76 -- (5---321 +(21)!)") == "5.109094217170944e+19"
+    assert callFunctionsByOrder("--(54  3*0.69  )#/123--(9!-~3@  9$  2^  3) ---(365^(55-(32+23)))") == "362853.0650406504"

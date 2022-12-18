@@ -12,8 +12,11 @@ def getNumBefore(formula, index):
     prior_number = formula[index - 1]
     i = 1
     while formula[index - i - 1] in valid_digits and index - i - 1 >= 0:
-        if formula[index - i - 1] == '-' and index - i - 1 != 0:  # if there is a minus sign in the middle of the formula - break
-            i -= 1
+        # if there is a minus sign in the middle of the formula - break
+        if formula[index - i - 1] == '-' and index - i - 1 != 0:
+            # catch edge case such as -> 9-~3@9 == 9-(-3)@9
+            if formula[index - i - 2] == '-':
+                prior_number = '-' + prior_number
             break
         prior_number = formula[index - i - 1] + prior_number
         i += 1
@@ -67,14 +70,18 @@ def Calculate(formula):
             # if the final result and there are more than 1 dot, raise exception
             if not flag and formula.count('.') > 1 and formula[0] == '-' and formula.count("-") == 1:
                 raise InvalidDotsUse()
-            if not flag and formula[0] == '-' and formula.count("-") == 1:  # if there are no more operations to be done, result is negative, break
+
+            # if there are no more operations to be done, result is negative, break
+            if not flag and formula[0] == '-' and formula.count("-") == 1:
                 break
 
-            if formula[0] == '+':  # if the first character is '+', remove it (knowing that it's a result of concatenation of minus signs)
+            # if the first character is '+', remove it (knowing that it's a result of concatenation of minus signs)
+            if formula[0] == '+':
                 formula = formula.replace('+', '')
 
             character = formula[index]
-            if character in operators:  # if the char is an operator, else inc index
+            # if the char is an operator, else inc index
+            if character in operators:
 
                 if priority_dict[character] == current_priority:  # if operator is the right priority
                     operations_dict[character].checkValid(index, formula)  # check if the operator is valid
@@ -99,7 +106,8 @@ def Calculate(formula):
                             raise InvalidDotsUse()
                         current_result = operations_dict[character].calculate(prior_number, "")
 
-                    else:  # if the operator is at the beginning of the formula
+                    # if the operator is at the beginning of the formula
+                    else:
                         prior_number = ""
                         after_number = getNumAfter(formula, index)
                         if after_number.count('.') > 1 or prior_number.count('.') > 1:  # if there are more than 1 dot in a number
@@ -112,6 +120,8 @@ def Calculate(formula):
 
                     # update the formula:
                     # everything before the num prior to the operator + the result of the calc + everything after the num after the operator
+                    if str(current_result).count('e') > 0:  # if the result is in scientific notation
+                        raise InvalidScientificNotation(character)
                     if not check:
                         formula = formula[:index - len(prior_number)] + str(float(current_result)) + formula[index + len(after_number) + 1:]
 
@@ -122,7 +132,12 @@ def Calculate(formula):
     return formula
 
 
-def CalculateParentheses(formula):  # take care of the calculation of the parentheses
+def CalculateParentheses(formula):
+    """
+    taking care of the calculation of the parentheses
+    :param formula: the formula that needs to be calculated
+    :return: the formula after the calculation of the parentheses
+    """
     index = 0
     found = False
     for character in formula:  # go over the formula

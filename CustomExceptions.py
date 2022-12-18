@@ -107,3 +107,15 @@ class NegativeFactorial(ValueError):
 
     def __str__(self):
         return "can't perform a factorial on a negative number: " + self.number
+
+
+class InvalidScientificNotation (ValueError):
+    """
+    in case the result of the calculation is presented in scientific notation
+    """
+
+    def __init__(self, operator):
+        self.operator = operator
+
+    def __str__(self):
+        return "WOW! the calculator can't handle the result of the operator " + self.operator + "'s calculation!"

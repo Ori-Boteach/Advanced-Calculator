@@ -20,6 +20,7 @@ def InitialCheck(given_formula):
     given_formula = InvalidDotsAndCorrection(given_formula)
     NegationCheck(given_formula)
     given_formula = CheckForConcatination(given_formula)
+    InvalidFirstCharCheck(given_formula)  # check again for invalid first char after concatination
     return given_formula
 
 
