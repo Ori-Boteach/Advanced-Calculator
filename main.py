@@ -54,6 +54,9 @@ def try_again():
     except EOFError:  # if the user pressed ctrl+d when trying to enter a key
         print("Invalid key! Please restart the program")
         exit(1)
+    except KeyboardInterrupt:
+        print("\nKeyboard Interrupt! Please restart the program")
+        exit(1)
 
 
 if __name__ == '__main__':
@@ -65,6 +68,9 @@ if __name__ == '__main__':
             formula = input("Please enter a formula: ")
         except EOFError:
             print("Invalid formula! Please restart the program")
+            break
+        except KeyboardInterrupt:
+            print("\nKeyboard Interrupt! Please restart the program")
             break
 
         callFunctionsByOrder(formula)
